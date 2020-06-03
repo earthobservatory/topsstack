@@ -45,12 +45,12 @@ export MASTER_DATE=$(python ${PGE_BASE}/get_master_date.py)
 # Create stack processor run scripts (after checking for MASTER DATE)
 if [[ "$MASTER_DATE" ]]; then
 	echo "MASTER_DATE exists: ${MASTER_DATE}"
-	echo stackSentinel.py -s zip/ -d ${WGS84} -a AuxDir/ -m ${MASTER_DATE} -o Orbits -b "${MINLAT} ${MAXLAT} ${MINLON} ${MAXLON}" -W slc
-	stackSentinel.py -s zip/ -d $WGS84 -a AuxDir/ -m $MASTER_DATE -o Orbits -b "$MINLAT $MAXLAT $MINLON $MAXLON" -W slc
+	echo stackSentinel.py -s zip/ -d ${WGS84} -a AuxDir/ -m ${MASTER_DATE} -o Orbits -b "${MINLAT} ${MAXLAT} ${MINLON} ${MAXLON}" -W slc -C geometry
+	stackSentinel.py -s zip/ -d $WGS84 -a AuxDir/ -m $MASTER_DATE -o Orbits -b "$MINLAT $MAXLAT $MINLON $MAXLON" -W slc -C geometry
 else
 	echo "MASTER_DATE DOES NOT EXIST"
-	echo stackSentinel.py -s zip/ -d $WGS84 -a AuxDir/ -o Orbits -b "$MINLAT $MAXLAT $MINLON $MAXLON" -W slc
-	stackSentinel.py -s zip/ -d $WGS84 -a AuxDir/ -o Orbits -b "$MINLAT $MAXLAT $MINLON $MAXLON" -W slc
+	echo stackSentinel.py -s zip/ -d $WGS84 -a AuxDir/ -o Orbits -b "$MINLAT $MAXLAT $MINLON $MAXLON" -W slc -C geometry
+	stackSentinel.py -s zip/ -d $WGS84 -a AuxDir/ -o Orbits -b "$MINLAT $MAXLAT $MINLON $MAXLON" -W slc -C geometry
 fi
 
 
@@ -62,88 +62,96 @@ export PATH="$PATH:/opt/conda/bin/"
 ###########################################################################
 ## STEP 1 ##
 start=`date +%s`
-cat run_files/run_1_unpack_slc_topo_master |head -1 | sh
-Num=`cat run_files/run_1_unpack_slc_topo_master | wc | awk '{print $1}'`
-echo $Num
-echo "cat run_files/run_1_unpack_slc_topo_master | tail -$Num | parallel -j+10 --eta --load 100%"
-cat run_files/run_1_unpack_slc_topo_master | tail -$Num | parallel -j+10 --eta --load 100%
+echo "sh run_files/run_1_unpack_topo_master"
+sh run_files/run_1_unpack_topo_master
 end=`date +%s`
 runtime1=$((end-start))
 echo $runtime1
 
 ## STEP 2 ##
 start=`date +%s`
-echo "cat run_files/run_2_average_baseline | parallel -j+10 --eta --load 100%"
-cat run_files/run_2_average_baseline | parallel -j+10 --eta --load 100%
+Num=`cat run_files/run_2_unpack_slave_slc | wc | awk '{print $1}'`
+echo $Num
+echo "cat run_files/run_2_unpack_slave_slc | parallel -j+10 --eta --load 100%"
+cat run_files/run_2_unpack_slave_slc | parallel -j+10 --eta --load 100%
 end=`date +%s`
 
 runtime2=$((end-start))
-echo $runtime2
+echo runtime2
+
+## STEP 2.5 ##
+start=`date +%s`
+echo "cat run_files/run_2.5_slc_noise_calibration | parallel -j+10 --eta --load 100%"
+cat run_files/run_2.5_slc_noise_calibration | parallel -j+10 --eta --load 100%
+end=`date +%s`
+
+runtime2x5=$((end-start))
+echo $runtime2x5
 
 ## STEP 3 ##
 start=`date +%s`
-echo "sh run_files/run_3_extract_burst_overlaps"
-sh run_files/run_3_extract_burst_overlaps
+echo "cat run_files/run_3_average_baseline | parallel -j+10 --eta --load 100%"
+cat run_files/run_3_average_baseline | parallel -j+10 --eta --load 100%
 end=`date +%s`
 runtime3=$((end-start))
 echo $runtime3
 
 ## STEP 4 ##
 start=`date +%s`
-echo "cat run_files/run_4_overlap_geo2rdr_resample  | parallel -j+10 --eta --load 100%"
-cat run_files/run_4_overlap_geo2rdr_resample  | parallel -j+10 --eta --load 100%
+echo "cat run_files/run_4_geo2rdr_resample  | parallel -j+10 --eta --load 100%"
+cat run_files/run_4_geo2rdr_resample  | parallel -j+10 --eta --load 100%
 end=`date +%s`
 runtime4=$((end-start))
 echo $runtime4
 
 ## STEP 5 ##
 start=`date +%s`
-echo "cat run_files/run_5_pairs_misreg  | parallel -j+10 --eta --load 100%"
-cat run_files/run_5_pairs_misreg  | parallel -j+10 --eta --load 100%
+echo "sh run_files/run_5_extract_stack_valid_region"
+sh run_files/run_5_extract_stack_valid_region
 end=`date +%s`
 runtime5=$((end-start))
 echo $runtime5
 
 ## STEP 6 ##
 start=`date +%s`
-echo "sh run_files/run_6_timeseries_misreg"
-sh run_files/run_6_timeseries_misreg
+echo "cat run_files/run_6_merge  | parallel -j+10 --eta --load 100%"
+cat run_files/run_6_merge  | parallel -j+10 --eta --load 100%
 end=`date +%s`
 runtime6=$((end-start))
 echo $runtime6
 
-## STEP 7 ##
-start=`date +%s`
-echo "cat run_files/run_7_geo2rdr_resample   | parallel -j+10 --eta --load 100%"
-cat run_files/run_7_geo2rdr_resample   | parallel -j+10 --eta --load 100%
-end=`date +%s`
-runtime7=$((end-start))
-echo $runtime7
-
-## STEP 8##
-start=`date +%s`
-echo "sh run_files/run_8_extract_stack_valid_region"
-sh run_files/run_8_extract_stack_valid_region
-end=`date +%s`
-runtime8=$((end-start))
-echo $runtime8
-
-
-## STEP 9 ##
-start=`date +%s`
-echo "cat run_files/run_9_merge  | parallel -j+10 --eta --load 100%"
-cat run_files/run_9_merge  | parallel -j+10 --eta --load 100%
-end=`date +%s`
-runtime9=$((end-start))
-echo $runtime9
-
-## STEP 9 ##
-start=`date +%s`
-echo "cat run_files/run_10_grid_baseline  | parallel -j+10 --eta --load 100%"
-cat run_files/run_10_grid_baseline  | parallel -j+10 --eta --load 100%
-end=`date +%s`
-runtime10=$((end-start))
-echo $runtime10
+### STEP 7 ##
+#start=`date +%s`
+#echo "cat run_files/run_7_geo2rdr_resample   | parallel -j+10 --eta --load 100%"
+#cat run_files/run_7_geo2rdr_resample   | parallel -j+10 --eta --load 100%
+#end=`date +%s`
+#runtime7=$((end-start))
+#echo $runtime7
+#
+### STEP 8##
+#start=`date +%s`
+#echo "sh run_files/run_8_extract_stack_valid_region"
+#sh run_files/run_8_extract_stack_valid_region
+#end=`date +%s`
+#runtime8=$((end-start))
+#echo $runtime8
+#
+#
+### STEP 9 ##
+#start=`date +%s`
+#echo "cat run_files/run_9_merge  | parallel -j+10 --eta --load 100%"
+#cat run_files/run_9_merge  | parallel -j+10 --eta --load 100%
+#end=`date +%s`
+#runtime9=$((end-start))
+#echo $runtime9
+#
+### STEP 9 ##
+#start=`date +%s`
+#echo "cat run_files/run_10_grid_baseline  | parallel -j+10 --eta --load 100%"
+#cat run_files/run_10_grid_baseline  | parallel -j+10 --eta --load 100%
+#end=`date +%s`
+#runtime10=$((end-start))
+#echo $runtime10
 
 ## SUMMARY ##
 echo "@@@@ SUMMARY  @@@@@@"
@@ -153,10 +161,10 @@ echo "@ Step 3:  $runtime3"
 echo "@ Step 4:  $runtime4"
 echo "@ Step 5:  $runtime5"
 echo "@ Step 6:  $runtime6"
-echo "@ Step 7:  $runtime7"
-echo "@ Step 8:  $runtime8"
-echo "@ Step 9:  $runtime9"
-echo "@ Step 10:  $runtime10"
+#echo "@ Step 7:  $runtime7"
+#echo "@ Step 8:  $runtime8"
+#echo "@ Step 9:  $runtime9"
+#echo "@ Step 10:  $runtime10"
 ###########################################################################
 
 

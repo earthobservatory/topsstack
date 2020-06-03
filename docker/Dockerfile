@@ -5,7 +5,7 @@ USER root
 
 # Install ISCE2
 RUN source /opt/conda/bin/activate root \
- && conda install -c conda-forge isce2
+ && conda install -c conda-forge isce2=2.3.3
 
 # Install directory
 ENV ISCE_HOME /opt/conda/lib/python3.7/site-packages/isce
