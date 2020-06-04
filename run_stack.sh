@@ -57,6 +57,12 @@ fi
 # allowing use of the gdal_translate command
 export PATH="$PATH:/opt/conda/bin/"
 
+echo "**********************************"
+# creating run2.5 run file
+cmd="stackSlcDn_run2.5.sh $MINLAT $MAXLAT $MINLON $MAXLON"
+echo "Making read_calbration_slc.py runfile: $cmd"
+eval $cmd
+echo "**********************************"
 
 # Jungkyo's GNU parallel for running all steps
 ###########################################################################
