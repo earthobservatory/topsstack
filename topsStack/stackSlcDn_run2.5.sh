@@ -31,7 +31,7 @@ slave_dir=$main_dir/slaves
 masterConfig=$(grep master $run1File | awk '{print $NF}')
 fzip=$(less $masterConfig | grep dirname | sed 's/dirname : \(\/.*\.zip\)/\1/')
 swath=$(grep swaths $masterConfig | sed 's/swaths : \(\.*\)/\1/')
-echo "$cali_code -zip $fzip -ext $bbox -od $master_dir -o -t noise -n \\\"$swath\\\"" >> $runFile
+echo "$cali_code -zip $fzip -ext $bbox -od $master_dir -o -t noise -n \'$swath\'" >> $runFile
 
 # get slave
 for file in $(grep slave $run2File | awk '{print $NF}');do
@@ -39,7 +39,7 @@ for file in $(grep slave $run2File | awk '{print $NF}');do
     fzip=$(grep dirname $file | sed 's/dirname : \(\/.*\.zip\)/\1/')
     swath=$(grep swaths $file | sed 's/swaths : \(\.*\)/\1/')
     odir="$slave_dir/$date"
-    echo "$cali_code -zip $fzip -ext $bbox -od $odir -o -t noise -n \\\"$swath\\\"" >> $runFile
+    echo "$cali_code -zip $fzip -ext $bbox -od $odir -o -t noise -n \'$swath\'" >> $runFile
 done
 echo "writing  $runFile"
 
