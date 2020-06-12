@@ -2,9 +2,9 @@
 #If config.txt not defined. Please define your inputs here
 #Directories neccesary to create run_files
 #run1File=./run_files/run_1_unpack_slc_topo_master
-run1File=./run_files/run_1_unpack_topo_master
-run2File=./run_files/run_2_unpack_slave_slc
-runFile=./run_files/run_2.5_slc_noise_calibration
+run1File=./run_files/run_01_unpack_topo_master
+run2File=./run_files/run_02_unpack_slave_slc
+runFile=./run_files/run_02.5_slc_noise_calibration
 cali_code='read_calibration_slc.py'
 
 #if [ "$1" == "-h" ]; then

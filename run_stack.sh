@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 source $HOME/.bash_profile
+source /opt/isce2/isce_env.sh
 
 # Saving the processing start time for .met.json file
 export PROCESSING_START=$(date +%FT%T)
@@ -60,7 +61,7 @@ export PATH="$PATH:/opt/conda/bin/"
 echo "**********************************"
 # creating run2.5 run file
 cmd="stackSlcDn_run2.5.sh $MINLAT $MAXLAT $MINLON $MAXLON"
-echo "Making read_calbration_slc.py runfile: $cmd"
+echo "Making read_calibration_slc.py runfile: $cmd"
 eval $cmd
 echo "**********************************"
 
@@ -68,18 +69,18 @@ echo "**********************************"
 ###########################################################################
 ## STEP 1 ##
 start=`date +%s`
-echo "sh run_files/run_1_unpack_topo_master"
-sh run_files/run_1_unpack_topo_master
+echo "sh run_files/run_01_unpack_topo_master"
+sh run_files/run_01_unpack_topo_master
 end=`date +%s`
 runtime1=$((end-start))
 echo $runtime1
 
 ## STEP 2 ##
 start=`date +%s`
-Num=`cat run_files/run_2_unpack_slave_slc | wc | awk '{print $1}'`
+Num=`cat run_files/run_02_unpack_slave_slc | wc | awk '{print $1}'`
 echo $Num
-echo "cat run_files/run_2_unpack_slave_slc | parallel -j+10 --eta --load 100%"
-cat run_files/run_2_unpack_slave_slc | parallel -j+10 --eta --load 100%
+echo "cat run_files/run_02_unpack_slave_slc | parallel -j+10 --eta --load 100%"
+cat run_files/run_02_unpack_slave_slc | parallel -j+10 --eta --load 100%
 end=`date +%s`
 
 runtime2=$((end-start))
@@ -87,8 +88,8 @@ echo runtime2
 
 ## STEP 2.5 ##
 start=`date +%s`
-echo "cat run_files/run_2.5_slc_noise_calibration | parallel -j+10 --eta --load 100%"
-cat run_files/run_2.5_slc_noise_calibration | parallel -j+10 --eta --load 100%
+echo "cat run_files/run_02.5_slc_noise_calibration | parallel -j+10 --eta --load 100%"
+cat run_files/run_02.5_slc_noise_calibration | parallel -j+10 --eta --load 100%
 end=`date +%s`
 
 runtime2x5=$((end-start))
@@ -96,35 +97,43 @@ echo $runtime2x5
 
 ## STEP 3 ##
 start=`date +%s`
-echo "cat run_files/run_3_average_baseline | parallel -j+10 --eta --load 100%"
-cat run_files/run_3_average_baseline | parallel -j+10 --eta --load 100%
+echo "cat run_files/run_03_average_baseline | parallel -j+10 --eta --load 100%"
+cat run_files/run_03_average_baseline | parallel -j+10 --eta --load 100%
 end=`date +%s`
 runtime3=$((end-start))
 echo $runtime3
 
 ## STEP 4 ##
 start=`date +%s`
-echo "cat run_files/run_4_geo2rdr_resample  | parallel -j+10 --eta --load 100%"
-cat run_files/run_4_geo2rdr_resample  | parallel -j+10 --eta --load 100%
+echo "cat run_files/run_04_fullBurst_geo2rdr  | parallel -j+10 --eta --load 100%"
+cat run_files/run_04_fullBurst_geo2rdr  | parallel -j+10 --eta --load 100%
 end=`date +%s`
 runtime4=$((end-start))
 echo $runtime4
 
 ## STEP 5 ##
 start=`date +%s`
-echo "sh run_files/run_5_extract_stack_valid_region"
-sh run_files/run_5_extract_stack_valid_region
+echo "cat run_files/run_05_fullBurst_resample  | parallel -j+10 --eta --load 100%"
+cat run_files/run_05_fullBurst_resample  | parallel -j+10 --eta --load 100%
 end=`date +%s`
 runtime5=$((end-start))
 echo $runtime5
 
 ## STEP 6 ##
 start=`date +%s`
-echo "cat run_files/run_6_merge  | parallel -j+10 --eta --load 100%"
-cat run_files/run_6_merge  | parallel -j+10 --eta --load 100%
+echo "sh run_files/run_06_extract_stack_valid_region"
+sh run_files/run_06_extract_stack_valid_region
 end=`date +%s`
 runtime6=$((end-start))
 echo $runtime6
+
+## STEP 7 ##
+start=`date +%s`
+echo "cat run_files/run_07_merge  | parallel -j+10 --eta --load 100%"
+cat run_files/run_07_merge | parallel -j+10 --eta --load 100%
+end=`date +%s`
+runtime7=$((end-start))
+echo $runtime7
 
 ### STEP 7 ##
 #start=`date +%s`
