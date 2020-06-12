@@ -33,9 +33,9 @@ RUN git clone https://github.com/isce-framework/isce2 /opt/isce2/src/isce2 \
 # && cp -r $TOPSSTACK_COPY_DIR $STACK_INSTALL_DIR \
 # && rm -rf $TOPSSTACK_COPY_DIR
 
-RUN cd /etc/yum.repos.d/ && \
-    wget http://download.opensuse.org/repositories/home:/tange/CentOS_CentOS-6/home:tange.repo && \
-    yum install parallel -y && \
+#RUN cd /etc/yum.repos.d/ && \
+#    wget http://download.opensuse.org/repositories/home:/tange/CentOS_CentOS-6/home:tange.repo && \
+RUN yum install parallel -y && \
     yum clean all
 
 
