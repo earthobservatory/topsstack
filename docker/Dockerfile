@@ -10,8 +10,7 @@ RUN /opt/conda/bin/conda install -y -c conda-forge jq \
 # Get source code for topsStack code which is not in install dir
 # May remove this block if /opt/isce2/src/isce2 is not removed in building the isce2 docker
 RUN git clone https://github.com/isce-framework/isce2 /opt/isce2/src/isce2 \
- && git --git-dir=/opt/isce2/src/isce2/.git reset --hard $(cat /opt/isce2/version.json | jq -r .object.sha)
-
+ && git --git-dir=/opt/isce2/src/isce2/.git reset --hard $(cat /opt/isce2/version.json | /opt/conda/bin/jq -r .object.sha)
 
 ## Install ISCE2
 #RUN source /opt/conda/bin/activate root \
