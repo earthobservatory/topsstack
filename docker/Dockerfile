@@ -6,10 +6,9 @@ USER root
 # Install necessary libraries
 #RUN cd /etc/yum.repos.d/ && \
 #    wget http://download.opensuse.org/repositories/home:/tange/CentOS_CentOS-6/home:tange.repo && \
-RUN yum update -y && \
-    yum install parallel -y && \
+RUN yum install parallel -y && \
     yum clean all
-    
+
 RUN /opt/conda/bin/conda install -y -c conda-forge jq \
  && /opt/conda/bin/pip install opencv-python
 
